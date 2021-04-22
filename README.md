@@ -1,0 +1,2 @@
+# recyclerview.adapter
+辅助android开发者少快速创建RecyclerView.Adapter的实现，基于ViewBinding、DataBinding以及Paging3。
