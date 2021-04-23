@@ -1,7 +1,7 @@
-# RecyclerView
+# RecyclerView.Adapter
 # 当前最新版本号：[![](https://jitpack.io/v/cn.numeron/recyclerview.adapter.svg)](https://jitpack.io/#cn.numeron/recyclerview.adapter)
 
-### adapter
+###
 * 辅助android开发者快速创建RecyclerView.Adapter的实现。
 * 对于已引入ViewBinding和DataBinding的项目极其友好，仅需要2-5行代码。
 * 提供DataBinding、ViewBinding配合普通列表及Paging3的各种适配器，可以满足各种需求。
@@ -109,6 +109,8 @@ itemAdapter.placeholderCount = 2
 //提交数据到Adapter
 itemAdapter.submitList(list)    
 ```
+
+![image](https://raw.githubusercontent.com/xiazunyang/recyclerview.adapter/main/preview.gif)
 
 ### paging3 + DataBinding
 * 当使用Paging3与DataBinding时，也可以使用自动绑定功能：
