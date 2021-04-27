@@ -50,7 +50,7 @@ itemAdapter.clickItemEvent.observe(this) { item: Item ->
 // T  -> 实现Identifiable接口的数据类
 // VH -> ViewBindingHolder的实现类
 // VB -> 根据布局自动生成的ViewBinding或ViewDataBinding实现类
-//需要向构造方法中传递一个从VH创建VB的工厂方法，一般直接引用VH实现类的构造方法即可
+//需要向构造方法中传递一个从VB创建VH的工厂方法，一般直接引用VH实现类的构造方法即可
 //如果没有传递这个参数，则需要实现onCreateViewHolder方法
 class ItemAdapter : MutableBindingAdapter<Item, ItemBinding, ItemHolder>(::ItemHolder)
 
