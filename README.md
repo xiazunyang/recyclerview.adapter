@@ -61,8 +61,6 @@ class ItemAdapter : MutableBindingAdapter<Item, ItemBinding, ItemHolder>(::ItemH
 class ItemHolder(binding: ItemBinding) : ViewBindingHolder<Item, ItemBinding>(binding) {
 
     init {
-        //默认提供clickEvent点击事件，设置后，可通过adapter.clickEvent.observe监听点击事件：
-        //binding.root.setOnClickListener(clickEvent)
         binding.root.setOnClickListener {
             val item = list.getItem(layoutPosition)
             //do something...
@@ -70,6 +68,8 @@ class ItemHolder(binding: ItemBinding) : ViewBindingHolder<Item, ItemBinding>(bi
     }
 
     override fun binding(position: Int) {
+        //默认提供clickEvent点击事件，设置后，可通过监听clickEvent获取点击事件：
+        //binding.root.setOnClickListener(clickEvent)
         binding.textView.text = list.getItem(position).toString()
     }
 }
@@ -83,21 +83,43 @@ itemListViewModel.itemListLiveData.observe(this) { list ->
 }
 ```
 
-### List表头占位
-* 偶尔会遇到需要在RecyclerView中开始的位置上显示一些固定的内容的需求，此时Adapter的getItemCount与List的size并不相等，当列表的数据发生变化时，会出现RecyclerView的动画不正常，加载不正确等问题，这里也可以提供解决方案：
+### List表头表尾占位
+* 偶尔会遇到需要在RecyclerView中开始或结束的位置上显示一些固定的内容的需求，此时Adapter的getItemCount与List的size并不相等，当列表的数据发生变化时，会出现RecyclerView的动画不正常，加载不正确等问题，这里也可以提供解决方案：
 ```kotlin
-//目前仅MutableBindingAdapter支持表头占位操作
-class ItemAdapter : MutableBindingAdapter<NumberItem, NumberViewBinding, ItemHolder>(::ItemHolder)
+//MutableBindingAdapter、AutomaticBindingAdapter：
+class ItemAdapter : AutomaticBindingAdapter<NumberItem, NumberViewBinding>() {
 
-class ItemHolder(binding: NumberViewBinding): ViewBindingHolder(binding) {
+    init {
+        //需要显示多少个表头项和表尾项
+        headerCount = 1
+        trailCount = 1
+    }
+
+    override fun onCreateHeaderViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
+        //创建表头项的ViewHolder
+        return HeaderHolder(HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    }
+
+    override fun onCreateTrailViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
+        //创建表尾项的ViewHolder
+        return TrailHolder(TrailBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    }
+
+}
+
+class HeaderHolder(binding: HeaderViewBinding): ViewBindingHolder<out Identifiable<*>, HeaderViewBinding>(binding) {
     override fun binding(position: Int) {
-        if (position < selectedAdapter.placeholderCount) {
-            //当position小于placeholderCount时，是拿不到列表数据的，只能显示固定的内容 
-            binding.itemTextView.text = String.format("占位符 - %d", position + 1)
-        } else {
-            binding.itemTextView.text = list.getItem(position).toString()
-            binding.root.setOnClickListener(clickEvent)
-        }
+        //position已校正为此ViewHolder在表头项中的真实位置
+        //无法使用list: ListHelper工具
+        //进行视图与数据的绑定操作
+    }
+}
+
+class TrailHolder(binding: TrailViewBinding): ViewBindingHolder<out Identifiable<*>, TrailViewBinding>(binding) {
+    override fun binding(position: Int) {
+        //position已校正为此ViewHolder在表尾项中的真实位置
+        //无法使用list: ListHelper工具
+        //进行视图与数据的绑定操作
     }
 }
 

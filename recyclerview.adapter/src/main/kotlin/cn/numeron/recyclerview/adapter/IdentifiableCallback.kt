@@ -9,19 +9,28 @@ import kotlin.collections.List
 open class IdentifiableCallback<T : Identifiable<*>>(
         protected val oldList: List<T>,
         protected val newList: List<T>,
-        protected val placeholderCount: Int) : DiffUtil.Callback() {
+        protected val headerCount: Int = 0,
+        protected val trailCount: Int = 0,
+) : DiffUtil.Callback() {
 
-    override fun getOldListSize(): Int = oldList.size + placeholderCount
+    init {
+        require(headerCount > -1)
+        require(trailCount > -1)
+    }
 
-    override fun getNewListSize(): Int = newList.size + placeholderCount
+    override fun getOldListSize(): Int = headerCount + oldList.size + trailCount
+
+    override fun getNewListSize(): Int = headerCount + newList.size + trailCount
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return if (oldItemPosition < placeholderCount || newItemPosition < placeholderCount) {
+        return if (oldItemPosition < headerCount || newItemPosition < headerCount) {
             oldItemPosition == newItemPosition
+        } else if (oldItemPosition >= headerCount + oldList.size || newItemPosition >= headerCount + newList.size) {
+            val diff = oldList.size - newList.size
+            oldItemPosition == newItemPosition + diff
         } else {
-            val correctedValue = placeholderCount.coerceAtLeast(0)
-            val correctedOldPosition = oldItemPosition - correctedValue
-            val correctedNewPosition = newItemPosition - correctedValue
+            val correctedOldPosition = oldItemPosition - headerCount
+            val correctedNewPosition = newItemPosition - headerCount
             val oldItem = oldList[correctedOldPosition]
             val newItem = newList[correctedNewPosition]
             oldItem.identity == newItem.identity
@@ -29,12 +38,14 @@ open class IdentifiableCallback<T : Identifiable<*>>(
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return if (oldItemPosition < placeholderCount || newItemPosition < placeholderCount) {
+        return  if (oldItemPosition < headerCount || newItemPosition < headerCount) {
             oldItemPosition == newItemPosition
+        } else if (oldItemPosition >= headerCount + oldList.size || newItemPosition >= headerCount + newList.size) {
+            val diff = oldList.size - newList.size
+            oldItemPosition == newItemPosition + diff
         } else {
-            val correctedValue = placeholderCount.coerceAtLeast(0)
-            val correctedOldPosition = oldItemPosition - correctedValue
-            val correctedNewPosition = newItemPosition - correctedValue
+            val correctedOldPosition = oldItemPosition - headerCount
+            val correctedNewPosition = newItemPosition - headerCount
             val oldItem = oldList[correctedOldPosition]
             val newItem = newList[correctedNewPosition]
             oldItem == newItem

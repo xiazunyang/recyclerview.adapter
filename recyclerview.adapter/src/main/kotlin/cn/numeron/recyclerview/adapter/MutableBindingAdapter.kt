@@ -15,7 +15,7 @@ abstract class MutableBindingAdapter<T : Identifiable<*>, out VB : ViewBinding, 
         private val factory: ((VB) -> VH)? = null,
         list: List<T> = emptyList(),
         itemDiffCallback: DiffUtil.ItemCallback<T> = IdentifiableItemCallback()
-) : RecyclerView.Adapter<VH>() {
+) : RecyclerView.Adapter<ViewBindingHolder<out Identifiable<*>, ViewBinding>>() {
 
     constructor(list: List<T>) : this(null, list)
 
@@ -29,7 +29,9 @@ abstract class MutableBindingAdapter<T : Identifiable<*>, out VB : ViewBinding, 
     protected val differ: AsyncListDiffer<T>
         get() = _differ
 
-    var placeholderCount by _differ::placeholderCount
+    var headerCount by _differ::headerCount
+
+    var trailCount by _differ::trailCount
 
     var list: List<T>
         get() = differ.currentList
@@ -51,21 +53,61 @@ abstract class MutableBindingAdapter<T : Identifiable<*>, out VB : ViewBinding, 
         return viewBindingClass.getMethod("inflate", *INFLATE_METHOD_ARGUMENTS)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        return if (factory != null) {
-            val inflater = LayoutInflater.from(parent.context)
-            val viewBinding = itemInflateMethod.invoke(null, inflater, parent, false) as VB
-            factory.invoke(viewBinding).also(::attachTo)
-        } else {
-            throw NotImplementedError("Can'nt create VH instance, please implementation onCreateViewHolder function.")
+    override fun getItemViewType(position: Int): Int {
+        return when {
+            position < headerCount -> ITEM_VIEW_TYPE_HEADER
+            position < headerCount + list.size -> ITEM_VIEW_TYPE_BODY
+            else -> ITEM_VIEW_TYPE_TRAIL
         }
     }
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
+        return when (viewType) {
+            ITEM_VIEW_TYPE_HEADER -> onCreateHeaderViewHolder(parent)
+            ITEM_VIEW_TYPE_BODY -> onCreateBodyViewHolder(parent).also(::attachTo)
+            else -> onCreateTrailViewHolder(parent)
+        }
+    }
+
+    override fun onBindViewHolder(holder: ViewBindingHolder<out Identifiable<*>, ViewBinding>, position: Int) {
+        when (holder.itemViewType) {
+            ITEM_VIEW_TYPE_HEADER -> onBindHeaderViewHolder(holder, position)
+            ITEM_VIEW_TYPE_BODY -> onBindBodyViewHolder(holder as VH, position - headerCount)
+            else -> onBindTrailViewHolder(holder, position - headerCount - list.size)
+        }
+    }
+
+    override fun getItemCount(): Int = headerCount + list.size + trailCount
+
+    open fun onCreateHeaderViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
+        throw NotImplementedError()
+    }
+
+    open fun onCreateBodyViewHolder(parent: ViewGroup): VH {
+        if (factory != null) {
+            val inflater = LayoutInflater.from(parent.context)
+            val viewBinding = itemInflateMethod.invoke(null, inflater, parent, false) as VB
+            return factory.invoke(viewBinding).also(::attachTo)
+        } else {
+            throw NotImplementedError("Can'nt create VH instance, please implementation `onCreateViewHolder` or `onCreateBodyViewHolder` function.")
+        }
+    }
+
+    open fun onCreateTrailViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
+        throw NotImplementedError()
+    }
+
+    open fun onBindHeaderViewHolder(holder: ViewBindingHolder<out Identifiable<*>, ViewBinding>, position: Int) {
         holder.binding(position)
     }
 
-    override fun getItemCount(): Int = _differ.itemCount
+    open fun onBindBodyViewHolder(holder: VH, position: Int) {
+        holder.binding(position)
+    }
+
+    open fun onBindTrailViewHolder(holder: ViewBindingHolder<out Identifiable<*>, ViewBinding>, position: Int) {
+        holder.binding(position)
+    }
 
     /** 更新适配器中的数据列表 */
     open fun submitList(list: List<T>) {
@@ -82,11 +124,15 @@ abstract class MutableBindingAdapter<T : Identifiable<*>, out VB : ViewBinding, 
 
     protected fun attachTo(holder: VH) {
         holder.attach(listHelper) {
-            clickEvent.value = ClickEvent(it, listHelper.getItem(holder.bindingAdapterPosition))
+            clickEvent.value = ClickEvent(it, listHelper.getItem(holder.bindingAdapterPosition - headerCount))
         }
     }
 
     private companion object {
+
+        private const val ITEM_VIEW_TYPE_HEADER = 1
+        private const val ITEM_VIEW_TYPE_BODY = 2
+        private const val ITEM_VIEW_TYPE_TRAIL = 3
 
         private val INFLATE_METHOD_ARGUMENTS = arrayOf(LayoutInflater::class.java,
                 ViewGroup::class.java, Boolean::class.javaPrimitiveType)

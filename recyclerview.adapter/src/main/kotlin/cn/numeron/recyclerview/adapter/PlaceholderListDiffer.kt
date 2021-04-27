@@ -17,14 +17,17 @@ internal class PlaceholderListDiffer<T : Identifiable<*>>(
     private val latchListMethod: Method
     private val mainThreadExecutor: Executor
 
-    internal var placeholderCount = 0
+    internal var headerCount = 0
         set(value) {
             field = value
             submitList(currentList)
         }
 
-    val itemCount: Int
-        get() = currentList.size + placeholderCount
+    internal var trailCount = 0
+        set(value) {
+            field = value
+            submitList(currentList)
+        }
 
     init {
         val asyncListDiffer = AsyncListDiffer::class.java
@@ -36,17 +39,17 @@ internal class PlaceholderListDiffer<T : Identifiable<*>>(
         mainThreadExecutor = mainExecutorField.get(this) as Executor
     }
 
-    fun getItem(position: Int): T? = currentList.getOrNull(position - placeholderCount)
+    fun getItem(position: Int): T? = currentList.getOrNull(position)
 
     override fun submitList(list: MutableList<T>?, commitCallback: Runnable?) {
-        if (list == null || placeholderCount == 0) {
+        if (list == null || headerCount == 0 && trailCount == 0) {
             //使用原方式计算列表差异
             super.submitList(list, commitCallback)
         } else {
             //使用占位比较器计算列表的差异
             val oldList = currentList.toList()
             config.backgroundThreadExecutor.execute {
-                val diffResult = DiffUtil.calculateDiff(IdentifiableCallback(oldList, list, placeholderCount))
+                val diffResult = DiffUtil.calculateDiff(IdentifiableCallback(oldList, list, headerCount, trailCount))
                 mainThreadExecutor.execute {
                     latchListMethod.invoke(this, list, diffResult, commitCallback)
                 }
