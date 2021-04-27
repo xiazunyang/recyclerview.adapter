@@ -91,8 +91,8 @@ class ItemAdapter : AutomaticBindingAdapter<NumberItem, NumberViewBinding>() {
 
     init {
         //需要显示多少个表头项和表尾项
-        headerCount = 1
-        trailCount = 1
+        headerCount = 2
+        trailCount = 3
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
@@ -126,8 +126,6 @@ class TrailHolder(binding: TrailViewBinding): ViewBindingHolder<out Identifiable
 //使用
 val itemAdapter = ItemAdapter()
 recyclerView.adapter = itemAdapter
-//指定头部占位有多少个
-itemAdapter.placeholderCount = 2
 //提交数据到Adapter
 itemAdapter.submitList(list)    
 ```
