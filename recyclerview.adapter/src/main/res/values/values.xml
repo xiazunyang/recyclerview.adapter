@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="id_view_tag_click_event" type="id" />
+    <item name="occupied_item_view_header" type="id" />
+    <item name="occupied_item_view_body" type="id" />
+    <item name="occupied_item_view_trails" type="id" />
 </resources>

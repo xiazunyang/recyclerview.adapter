@@ -47,5 +47,6 @@ android {
 
 dependencies {
     api 'cn.numeron:common:1.0.5'
+    api 'cn.numeron:stateless.livedata:1.0.0'
     compileOnly 'androidx.paging:paging-runtime-ktx:3.0.0-beta03'
 }

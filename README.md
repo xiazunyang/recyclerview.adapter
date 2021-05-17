@@ -86,8 +86,8 @@ itemListViewModel.itemListLiveData.observe(this) { list ->
 ### List表头表尾占位
 * 偶尔会遇到需要在RecyclerView中开始或结束的位置上显示一些固定的内容的需求，此时Adapter的getItemCount与List的size并不相等，当列表的数据发生变化时，会出现RecyclerView的动画不正常，加载不正确等问题，这里也可以提供解决方案：
 ```kotlin
-//MutableBindingAdapter、AutomaticBindingAdapter：
-class ItemAdapter : AutomaticBindingAdapter<NumberItem, NumberViewBinding>() {
+// TernaryBindingAdapter
+class ItemAdapter : TernaryBindingAdapter<NumberItem>() {
 
     init {
         //需要显示多少个表头项和表尾项
@@ -98,6 +98,11 @@ class ItemAdapter : AutomaticBindingAdapter<NumberItem, NumberViewBinding>() {
     override fun onCreateHeaderViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
         //创建表头项的ViewHolder
         return HeaderHolder(HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    }
+
+    override fun onCreateBodyViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
+        //创建主要区域的ViewHolder
+        return BodyHolder(BodyBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onCreateTrailViewHolder(parent: ViewGroup): ViewBindingHolder<out Identifiable<*>, ViewBinding> {
@@ -113,6 +118,14 @@ class HeaderHolder(binding: HeaderViewBinding): ViewBindingHolder<out Identifiab
         //无法使用list: ListHelper工具
         //进行视图与数据的绑定操作
     }
+}
+
+class BodyHolder(binding: BodyViewBinding): : ViewBindingHolder<out Identifiable<*>, HeaderViewBinding>(binding) {
+    override fun binding(position: Int) {
+            //position已校正为此ViewHolder在表头项中的真实位置
+            //无法使用list: ListHelper工具
+            //进行视图与数据的绑定操作
+        }
 }
 
 class TrailHolder(binding: TrailViewBinding): ViewBindingHolder<out Identifiable<*>, TrailViewBinding>(binding) {

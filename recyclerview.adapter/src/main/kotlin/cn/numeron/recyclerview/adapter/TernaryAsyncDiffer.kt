@@ -6,7 +6,7 @@ import cn.numeron.common.Identifiable
 import java.lang.reflect.Method
 import java.util.concurrent.Executor
 
-internal class PlaceholderListDiffer<T : Identifiable<*>>(
+internal class TernaryAsyncDiffer<T : Identifiable<*>>(
         listUpdateCallback: ListUpdateCallback,
         private val config: AsyncDifferConfig<T>
 ) : AsyncListDiffer<T>(listUpdateCallback, config) {
@@ -19,12 +19,14 @@ internal class PlaceholderListDiffer<T : Identifiable<*>>(
 
     internal var headerCount = 0
         set(value) {
+            require(value >= 0)
             field = value
             submitList(currentList)
         }
 
     internal var trailCount = 0
         set(value) {
+            require(value >= 0)
             field = value
             submitList(currentList)
         }
@@ -39,8 +41,6 @@ internal class PlaceholderListDiffer<T : Identifiable<*>>(
         mainThreadExecutor = mainExecutorField.get(this) as Executor
     }
 
-    fun getItem(position: Int): T? = currentList.getOrNull(position)
-
     override fun submitList(list: MutableList<T>?, commitCallback: Runnable?) {
         if (list == null || headerCount == 0 && trailCount == 0) {
             //使用原方式计算列表差异
@@ -49,7 +49,7 @@ internal class PlaceholderListDiffer<T : Identifiable<*>>(
             //使用占位比较器计算列表的差异
             val oldList = currentList.toList()
             config.backgroundThreadExecutor.execute {
-                val diffResult = DiffUtil.calculateDiff(IdentifiableCallback(oldList, list, headerCount, trailCount))
+                val diffResult = DiffUtil.calculateDiff(TernaryDifferenceCallback(oldList, list, headerCount, trailCount))
                 mainThreadExecutor.execute {
                     latchListMethod.invoke(this, list, diffResult, commitCallback)
                 }

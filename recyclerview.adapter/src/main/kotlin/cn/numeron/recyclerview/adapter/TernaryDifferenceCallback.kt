@@ -1,12 +1,11 @@
 package cn.numeron.recyclerview.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import cn.numeron.common.Identifiable
 import kotlin.collections.List
 
 /** 当RecyclerView的列表发生变化时，使用此工具来对比差异，并且处理动画 */
-open class IdentifiableCallback<T : Identifiable<*>>(
+internal class TernaryDifferenceCallback<T : Identifiable<*>>(
         protected val oldList: List<T>,
         protected val newList: List<T>,
         protected val headerCount: Int = 0,
@@ -38,7 +37,7 @@ open class IdentifiableCallback<T : Identifiable<*>>(
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return  if (oldItemPosition < headerCount || newItemPosition < headerCount) {
+        return if (oldItemPosition < headerCount || newItemPosition < headerCount) {
             oldItemPosition == newItemPosition
         } else if (oldItemPosition >= headerCount + oldList.size || newItemPosition >= headerCount + newList.size) {
             val diff = oldList.size - newList.size
@@ -50,18 +49,6 @@ open class IdentifiableCallback<T : Identifiable<*>>(
             val newItem = newList[correctedNewPosition]
             oldItem == newItem
         }
-    }
-
-    companion object {
-
-        fun IdentifiableCallback<*>.dispatchUpdatesTo(adapter: RecyclerView.Adapter<*>) {
-            DiffUtil.calculateDiff(this).dispatchUpdatesTo(adapter)
-        }
-
-        fun IdentifiableCallback<*>.dispatchUpdatesTo(recyclerView: RecyclerView) {
-            dispatchUpdatesTo(recyclerView.adapter ?: return)
-        }
-
     }
 
 }

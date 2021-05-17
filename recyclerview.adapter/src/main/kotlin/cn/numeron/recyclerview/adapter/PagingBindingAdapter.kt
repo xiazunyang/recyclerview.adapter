@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.viewbinding.ViewBinding
 import cn.numeron.common.Identifiable
+import cn.numeron.stateless.livedata.StatelessLiveData
 import kotlinx.coroutines.Dispatchers
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
@@ -12,13 +13,13 @@ import java.lang.reflect.ParameterizedType
 @Suppress("UNCHECKED_CAST")
 abstract class PagingBindingAdapter<T : Identifiable<*>, out VB : ViewBinding, VH : ViewBindingHolder<T, VB>>(
         private val factory: ((VB) -> VH)? = null,
-) : PagingDataAdapter<T, VH>(IdentifiableItemCallback(), workerDispatcher = Dispatchers.IO) {
+) : PagingDataAdapter<T, VH>(IdentifiableDifferenceCallback(), workerDispatcher = Dispatchers.IO) {
 
     protected val listHelper = ListHelper(::getItem)
 
     private val inflateMethod by lazy(::getViewBindingInflateMethod)
 
-    val clickEvent = Observable<ClickEvent<T>>()
+    val clickEvent = StatelessLiveData<ClickEvent<T>>()
 
     val clickItemEvent = clickEvent.map(ClickEvent<T>::item)
 
