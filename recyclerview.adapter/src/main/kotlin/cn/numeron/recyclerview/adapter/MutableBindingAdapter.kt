@@ -72,6 +72,14 @@ abstract class MutableBindingAdapter<T : Identifiable<*>, out VB : ViewBinding, 
         differ.submitList(list)
     }
 
+    /** 追加数据到底部 */
+    fun appendList(list: List<T>) {
+        val arrayList = ArrayList<T>(list.size + this.list.size)
+        arrayList.addAll(this.list)
+        arrayList.addAll(list)
+        submitList(arrayList)
+    }
+
     fun addListChangedListener(l: AsyncListDiffer.ListListener<T>) {
         differ.addListListener(l)
     }
