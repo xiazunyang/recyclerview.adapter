@@ -27,7 +27,7 @@ open class AutomaticBindingHolder<T : Identifiable<*>, DB : ViewDataBinding>(bin
     }
 
     override fun binding(position: Int) {
-        val item = list.getItem(position)
+        val item = list.getOrNull(position)
         bindItemMethods[dataBindingClassName]?.invoke(binding, item)
         bindClickMethods[dataBindingClassName]?.invoke(binding, clickEvent)
         binding.executePendingBindings()
