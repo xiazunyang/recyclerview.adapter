@@ -1,6 +1,7 @@
 package cn.numeron.recyclerview.adapter
 
 import androidx.databinding.ViewDataBinding
+import androidx.recyclerview.widget.DiffUtil
 import cn.numeron.common.Identifiable
 import java.lang.reflect.ParameterizedType
 
@@ -10,8 +11,9 @@ import java.lang.reflect.ParameterizedType
  * <variable name="item" type="Item" /> 注：type必需与T泛型一致
  * <variable name="onClickListener" type="View.OnClickListener" /> 注：必需是View.OnClickListener类型
  * */
-abstract class PagingAutomaticBindingAdapter<T : Identifiable<*>, DB : ViewDataBinding> :
-        PagingBindingAdapter<T, DB, AutomaticBindingHolder<T, DB>>(::AutomaticBindingHolder) {
+abstract class PagingAutomaticBindingAdapter<T : Identifiable<*>, DB : ViewDataBinding>(
+        diffCallback: DiffUtil.ItemCallback<T> = IdentifiableDifferenceCallback()
+) : PagingBindingAdapter<T, DB, AutomaticBindingHolder<T, DB>>(::AutomaticBindingHolder, diffCallback) {
 
     init {
         val parameterizedType = javaClass.genericSuperclass as ParameterizedType

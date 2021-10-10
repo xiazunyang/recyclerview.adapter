@@ -3,6 +3,7 @@ package cn.numeron.recyclerview.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.viewbinding.ViewBinding
 import cn.numeron.common.Identifiable
 import cn.numeron.stateless.livedata.StatelessLiveData
@@ -13,7 +14,8 @@ import java.lang.reflect.ParameterizedType
 @Suppress("UNCHECKED_CAST")
 abstract class PagingBindingAdapter<T : Identifiable<*>, out VB : ViewBinding, VH : ViewBindingHolder<T, VB>>(
         private val factory: ((VB) -> VH)? = null,
-) : PagingDataAdapter<T, VH>(IdentifiableDifferenceCallback(), workerDispatcher = Dispatchers.IO) {
+        diffCallback: DiffUtil.ItemCallback<T> = IdentifiableDifferenceCallback()
+) : PagingDataAdapter<T, VH>(diffCallback, workerDispatcher = Dispatchers.IO) {
 
     protected val listHelper = ListHelper(::getItem)
 
